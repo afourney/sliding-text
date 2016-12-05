@@ -1,22 +1,31 @@
 {
-  "uuid": "C7A9D535-E9BD-4C36-9C30-B45AD0908634",
-  "shortName": "Sliding Text",
-  "longName": "Sliding Text",
-  "companyName": "Pebble Technology",
-  "versionLabel": "1.0",
-  "sdkVersion": "3",
-  "targetPlatforms": [
-    "aplite",
-    "basalt",
-    "chalk"
-  ],
-  "watchapp": {
-    "watchface": true
-  },
-  "appKeys": {
-    "dummy": 0
-  },
-  "resources": {
-    "media": []
-  }
+    "author": "Adam Fourney",
+    "dependencies": {},
+    "keywords": [],
+    "name": "text-w.-steps",
+    "pebble": {
+        "capabilities": [
+            "health"
+        ],
+        "displayName": "Text with Steps",
+        "enableMultiJS": true,
+        "messageKeys": [],
+        "projectType": "native",
+        "resources": {
+            "media": []
+        },
+        "sdkVersion": "3",
+        "targetPlatforms": [
+            "aplite",
+            "basalt",
+            "chalk",
+            "diorite",
+            "emery"
+        ],
+        "uuid": "5cc8478b-56cf-4aa7-af25-c5aa59dfcabe",
+        "watchapp": {
+            "watchface": true
+        }
+    },
+    "version": "1.0.0"
 }
