@@ -1,5 +1,8 @@
 #include <pebble.h>
+#include <ctype.h>
 #include "num2words.h"
+
+#define BUFF_SIZE 32
 
 typedef enum {
   MOVING_IN,
@@ -23,10 +26,16 @@ typedef struct {
 } SlidingRow;
 
 typedef struct {
-  TextLayer *demo_label;
   SlidingRow rows[3];
   int last_hour;
   int last_minute;
+  
+  TextLayer *steps_label;
+  char steps_text[BUFF_SIZE];
+  
+  TextLayer *date_label;
+  char date_text[BUFF_SIZE];
+  
 
   GFont bitham42_bold;
   GFont bitham42_light;
@@ -41,13 +50,6 @@ typedef struct {
     char first_minutes[2][32];
     char second_minutes[2][32];
     uint8_t next_minutes;
-
-    struct SlidingTextRenderDemoTime {
-      int secs;
-      int mins;
-      int hour;
-    } demo_time;
-
   } render_state;
 
 } SlidingTextData;
@@ -202,6 +204,55 @@ static void make_animation() {
 
 static void handle_minute_tick(struct tm *tick_time, TimeUnits units_changed) {
   make_animation();
+  
+  if (s_data) {
+    int steps = (int) health_service_sum_today(HealthMetricStepCount);
+    #if defined(PBL_RECT)
+    if (steps == 1) {
+      snprintf(s_data->steps_text, BUFF_SIZE, "%d step", steps);
+    }
+    else {
+      snprintf(s_data->steps_text, BUFF_SIZE, "%d steps", steps);
+    }
+    #elif defined(PBL_ROUND)
+    snprintf(s_data->steps_text, BUFF_SIZE, "%d", steps);
+    #endif
+    text_layer_set_text(s_data->steps_label, s_data->steps_text);
+    
+    // The Date
+    if (tick_time->tm_mday == 1 || tick_time->tm_mday == 21 || tick_time->tm_mday == 31) {
+      if (tick_time->tm_mday < 10) {
+        strftime(s_data->date_text, BUFF_SIZE, "%A the%est", tick_time);
+      }
+      else {
+        strftime(s_data->date_text, BUFF_SIZE, "%A the %dst", tick_time);
+      }
+    }
+    else if (tick_time->tm_mday == 2 || tick_time->tm_mday == 22) {
+      if (tick_time->tm_mday < 10) {
+        strftime(s_data->date_text, BUFF_SIZE, "%A the%end", tick_time);
+      }
+      else {
+        strftime(s_data->date_text, BUFF_SIZE, "%A the %dnd", tick_time);
+      }
+    }
+    else if (tick_time->tm_mday == 3 || tick_time->tm_mday == 23) {
+      if (tick_time->tm_mday < 10) {
+        strftime(s_data->date_text, BUFF_SIZE, "%A the%erd", tick_time);
+      }
+      else {
+        strftime(s_data->date_text, BUFF_SIZE, "%A the %drd", tick_time);
+      }    }
+    else {
+      if (tick_time->tm_mday < 10) {
+        strftime(s_data->date_text, BUFF_SIZE, "%A the%eth", tick_time);
+      }
+      else {
+        strftime(s_data->date_text, BUFF_SIZE, "%A the %dth", tick_time);
+      }
+    } 
+    text_layer_set_text(s_data->date_label, s_data->date_text);
+  }
 }
 
 static void handle_deinit(void) {
@@ -215,10 +266,6 @@ static void handle_init() {
 
   data->render_state.next_hours = 0;
   data->render_state.next_minutes = 0;
-  data->render_state.demo_time.secs = 0;
-  data->render_state.demo_time.mins = 0;
-  data->render_state.demo_time.hour = 0;
-
   data->window = window_create();
 
   window_set_background_color(data->window, GColorBlack);
@@ -229,25 +276,47 @@ static void handle_init() {
   Layer *window_layer = window_get_root_layer(data->window);
   GRect layer_frame = layer_get_frame(window_layer);
   const int16_t width = layer_frame.size.w;
-  init_sliding_row(data, &data->rows[0], GRect(0, 20, width, 60), data->bitham42_bold, 6);
+  const int16_t height = layer_frame.size.h;
+  init_sliding_row(data, &data->rows[0], GRect(0, 14, width, 60), data->bitham42_bold, 6);
   layer_add_child(window_layer, text_layer_get_layer(data->rows[0].label));
 
-  init_sliding_row(data, &data->rows[1], GRect(0, 56, width, 96), data->bitham42_light, 3);
+  init_sliding_row(data, &data->rows[1], GRect(0, 50, width, 96), data->bitham42_light, 3);
   layer_add_child(window_layer, text_layer_get_layer(data->rows[1].label));
 
-  init_sliding_row(data, &data->rows[2], GRect(0, 92, width, 132), data->bitham42_light, 0);
+  init_sliding_row(data, &data->rows[2], GRect(0, 86, width, 132), data->bitham42_light, 0);
   layer_add_child(window_layer, text_layer_get_layer(data->rows[2].label));
 
   GFont norm14 = fonts_get_system_font(FONT_KEY_GOTHIC_14);
-
-  data->demo_label = text_layer_create(GRect(0, -3, 100, 20));
-  text_layer_set_background_color(data->demo_label, GColorClear);
-  text_layer_set_text_color(data->demo_label, GColorWhite);
-  text_layer_set_font(data->demo_label, norm14);
-  text_layer_set_text(data->demo_label, "demo mode");
-  layer_add_child(window_layer, text_layer_get_layer(data->demo_label));
-
-  layer_set_hidden(text_layer_get_layer(data->demo_label), true);
+  GFont bold14 = fonts_get_system_font(FONT_KEY_GOTHIC_14_BOLD);
+   
+  #if defined(PBL_RECT)
+  data->steps_label = text_layer_create(GRect(0, height - 30, width-3, 20));
+  text_layer_set_text_alignment(data->steps_label, GTextAlignmentRight);
+  #elif defined(PBL_ROUND)
+  data->steps_label = text_layer_create(GRect(0, height - 27, width, 20));
+  text_layer_set_text_alignment(data->steps_label, GTextAlignmentCenter);
+  #endif
+  
+  text_layer_set_background_color(data->steps_label, GColorClear);
+  text_layer_set_text_color(data->steps_label, GColorWhite);
+  text_layer_set_font(data->steps_label, bold14);
+  text_layer_set_text(data->steps_label, "");
+  layer_add_child(window_layer, text_layer_get_layer(data->steps_label));
+  
+  #if defined(PBL_RECT)
+  data->date_label = text_layer_create(GRect(0, height - 16, width-3, 20));
+  text_layer_set_text_alignment(data->date_label, GTextAlignmentRight);
+  #elif defined(PBL_ROUND)
+  data->date_label = text_layer_create(GRect(0, height - 42, width, 20));
+  text_layer_set_text_alignment(data->date_label, GTextAlignmentCenter);
+  #endif
+  
+  text_layer_set_background_color(data->date_label, GColorClear);
+  text_layer_set_text_color(data->date_label, GColorWhite);
+  text_layer_set_font(data->date_label, norm14);
+  text_layer_set_text(data->date_label, "");
+  layer_add_child(window_layer, text_layer_get_layer(data->date_label));
+  
   layer_mark_dirty(window_layer);
 
   make_animation();
@@ -265,4 +334,3 @@ int main(void) {
 
   handle_deinit();
 }
-
