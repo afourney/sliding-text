@@ -277,43 +277,60 @@ static void handle_init() {
   GRect layer_frame = layer_get_frame(window_layer);
   const int16_t width = layer_frame.size.w;
   const int16_t height = layer_frame.size.h;
+  
+  #if defined(PBL_RECT)
+  init_sliding_row(data, &data->rows[0], GRect(0, 6, width, 60), data->bitham42_bold, 6);
+  #elif defined(PBL_ROUND)
   init_sliding_row(data, &data->rows[0], GRect(0, 14, width, 60), data->bitham42_bold, 6);
+  #endif
   layer_add_child(window_layer, text_layer_get_layer(data->rows[0].label));
 
+  #if defined(PBL_RECT)
+  init_sliding_row(data, &data->rows[1], GRect(0, 42, width, 96), data->bitham42_light, 3);
+  #elif defined(PBL_ROUND)
   init_sliding_row(data, &data->rows[1], GRect(0, 50, width, 96), data->bitham42_light, 3);
+  #endif
   layer_add_child(window_layer, text_layer_get_layer(data->rows[1].label));
 
+  #if defined(PBL_RECT)
+  init_sliding_row(data, &data->rows[2], GRect(0, 78, width, 132), data->bitham42_light, 0);
+  #elif defined(PBL_ROUND)
   init_sliding_row(data, &data->rows[2], GRect(0, 86, width, 132), data->bitham42_light, 0);
+  #endif
   layer_add_child(window_layer, text_layer_get_layer(data->rows[2].label));
 
   GFont norm14 = fonts_get_system_font(FONT_KEY_GOTHIC_14);
   GFont bold14 = fonts_get_system_font(FONT_KEY_GOTHIC_14_BOLD);
+  GFont norm18 = fonts_get_system_font(FONT_KEY_GOTHIC_18);
+  GFont bold18 = fonts_get_system_font(FONT_KEY_GOTHIC_18_BOLD);
    
   #if defined(PBL_RECT)
-  data->steps_label = text_layer_create(GRect(0, height - 30, width-3, 20));
+  data->steps_label = text_layer_create(GRect(0, height - 38, width-3, 20));
   text_layer_set_text_alignment(data->steps_label, GTextAlignmentRight);
+  text_layer_set_font(data->steps_label, bold18);
   #elif defined(PBL_ROUND)
   data->steps_label = text_layer_create(GRect(0, height - 27, width, 20));
   text_layer_set_text_alignment(data->steps_label, GTextAlignmentCenter);
+  text_layer_set_font(data->steps_label, bold14);
   #endif
   
   text_layer_set_background_color(data->steps_label, GColorClear);
   text_layer_set_text_color(data->steps_label, GColorWhite);
-  text_layer_set_font(data->steps_label, bold14);
   text_layer_set_text(data->steps_label, "");
   layer_add_child(window_layer, text_layer_get_layer(data->steps_label));
   
   #if defined(PBL_RECT)
-  data->date_label = text_layer_create(GRect(0, height - 16, width-3, 20));
+  data->date_label = text_layer_create(GRect(0, height - 22, width-3, 20));
   text_layer_set_text_alignment(data->date_label, GTextAlignmentRight);
+  text_layer_set_font(data->date_label, norm18);
   #elif defined(PBL_ROUND)
   data->date_label = text_layer_create(GRect(0, height - 42, width, 20));
   text_layer_set_text_alignment(data->date_label, GTextAlignmentCenter);
+  text_layer_set_font(data->date_label, norm14);
   #endif
   
   text_layer_set_background_color(data->date_label, GColorClear);
   text_layer_set_text_color(data->date_label, GColorWhite);
-  text_layer_set_font(data->date_label, norm14);
   text_layer_set_text(data->date_label, "");
   layer_add_child(window_layer, text_layer_get_layer(data->date_label));
   
@@ -334,3 +351,4 @@ int main(void) {
 
   handle_deinit();
 }
+

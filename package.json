@@ -1,0 +1,31 @@
+{
+    "author": "Adam Fourney",
+    "dependencies": {},
+    "keywords": [],
+    "name": "text-w.-steps",
+    "pebble": {
+        "capabilities": [
+            "health"
+        ],
+        "displayName": "Text with Steps",
+        "enableMultiJS": true,
+        "messageKeys": [],
+        "projectType": "native",
+        "resources": {
+            "media": []
+        },
+        "sdkVersion": "3",
+        "targetPlatforms": [
+            "aplite",
+            "basalt",
+            "chalk",
+            "diorite",
+            "emery"
+        ],
+        "uuid": "5cc8478b-56cf-4aa7-af25-c5aa59dfcabe",
+        "watchapp": {
+            "watchface": true
+        }
+    },
+    "version": "1.1.0"
+}

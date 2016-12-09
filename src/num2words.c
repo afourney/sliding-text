@@ -161,13 +161,13 @@ void minute_to_formal_words(int minutes, char *first_word, char *second_word) {
   strcpy(first_word, "");
   strcpy(second_word, "");
 
-
   if (minutes == 0) {
     strcat(first_word, STR_OH_TICK);
     strcat(first_word, STR_CLOCK);
     return;
   }
   if (minutes < 10) {
+    strcat(first_word, STR_OH_TICK);
     strcat(first_word, ONES[minutes%10]);
     return;
   }
